@@ -282,7 +282,9 @@ import java.util.concurrent.Executors;
     			if(!flag.isExpire()){
     			al.add(flag);
     			}else{
-					doInactive(flag.getKey(), flag.getValue(), flag.lastAccess);
+					if(!flag.isRemoved()){
+						doInactive(flag.getKey(), flag.getValue(), flag.lastAccess);
+					}
     				flag.value=null;
     				flag.setRemoved(true);
     			}
@@ -340,8 +342,8 @@ import java.util.concurrent.Executors;
 	    		for(CacheNode<K, V> n :nodes){
 					if(tranId!=tid){break;}
 	    			if(n.isExpire()){
+						if(!n.isRemoved()){doInactive(n.getKey(),n.value,n.lastAccess);}
 	    				n.setRemoved(true);
-						doInactive(n.getKey(),n.value,n.lastAccess);
 	    				n.setValue(null);
 						if(!isFirst)n.remove();
 	    				//System.out.println("*************************"+n.key);
@@ -376,6 +378,31 @@ import java.util.concurrent.Executors;
 				//System.out.println("---doInactive-----");
 				if(inactiveHandler!=null)inactiveHandler.onInactive(k, v, create);
 			}catch(Exception e){}
+		}
+
+		Thread watcher;
+		public void startWatch(){
+			if(watcher!=null&&watcher.isAlive()){
+				return ;
+			}
+			watcher=new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					while(true){
+						count();
+						try {
+							Thread.sleep(15000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+			});
+			watcher.setName("LRU-watcher");
+			watcher.setDaemon(true);
+			watcher.start();
 		}
     	
     }
