@@ -190,9 +190,12 @@ import java.util.concurrent.Executors;
     			// n.insertBefore(head);
     			if (n.pre == null && n.next == null)
     				throw new RuntimeException("000000");
-    			if (tail.pre == null && tail.next == null)
+				if(tail==null)tail=findTail(head);
+				if(tail==null)tail=n;
+				//else
+    			/*if (tail.pre == null && tail.next == null)
     				throw new RuntimeException("000tail000:" + k + " tail:"
-    						+ tail.key);
+    						+ tail.key);*/
     			// head.appendTo(n);
     			head = n;
     			return;
@@ -235,6 +238,16 @@ import java.util.concurrent.Executors;
     		}
 
     	}
+
+		private CacheNode findTail(CacheNode n){
+			if(n==null)return null;
+			CacheNode c=n;
+			while(c.next!=null){
+				c=c.next;
+				if(c==n)break;
+			}
+			return c;
+		}
 
     	/**
     	 * 获取缓存值
